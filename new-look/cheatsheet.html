@@ -60,7 +60,7 @@
 <li><p>Learn how to interact with HOL4 using the <a href="https://hol-theorem-prover.org/#doc">documentation</a>.</p>
 <ul>
 <li>For Emacs, the <a href="https://hol-theorem-prover.org/HOL-interaction.pdf">short guide</a> or <a href="https://hol-theorem-prover.org/hol-mode.html">complete documentation</a>.</li>
-<li>For Vim, the <a href="https://github.com/HOL-Theorem-Prover/HOL/blob/master/tools/editor-modes/vim/README.md">plugin documentation</a>. At first, you should use the <a href="https://github.com/HOL-Theorem-Prover/HOL/blob/master/tools/editor-modes/vim/README.md#vimholsh-script"><code>vimhol.sh</code></a> script to run side-by-side Vim and HOL4 using <code>tmux</code>.</li>
+<li>For Vim, the <a href="https://github.com/HOL-Theorem-Prover/HOL/blob/master/tools/vim/README.md">plugin documentation</a>. At first, you should use the <a href="https://github.com/HOL-Theorem-Prover/HOL/blob/master/tools/vim/README.md#vimholsh-script"><code>vimhol.sh</code></a> script to run side-by-side Vim and HOL4 using <code>tmux</code>.</li>
 </ul></li>
 <li><p>Add the following to your <code>.hol-config.sml</code> (in your home directory):</p>
 <pre><code>val m = Hol_pp.print_apropos;
@@ -171,8 +171,8 @@ Requires the supplied theorem to be used a number of times, by checking the numb
 </dd>
 </dl>
 <br>
+Also commonly used when rewriting are:
 
-<p>Also commonly used when rewriting are:</p>
 <dl>
 <dt><code>GSYM <i>theorem</i></code></dt>
 <dd>
@@ -204,8 +204,9 @@ Converts a definition of the form <code>⊢ ∀ x y z. f x y z = ...</code> into
 </dd>
 </dl>
 <br>
+Note that the above are termed *rules* - these transform theorems to other theorems, allowing the above to be combined (e.g. `simp[Once $ GSYM thm]`).
+There are many other useful rules - see the HOL4 documentation for more details.
 
-<p>Note that the above are termed <em>rules</em> - these transform theorems to other theorems, allowing the above to be combined (e.g. <code>simp[Once $ GSYM thm]</code>). There are many other useful rules - see the HOL4 documentation for more details.</p>
 <p>In some cases we may wish to use a set of rewrites for simplification. One way to do this is to use the <code>SF</code> modifier in our list of rewrites, e.g. <code>simp[SF CONJ_ss]</code>.</p>
 <dl>
 <dt><code>SF <i>&lt;simpset fragment&gt;</i></code></dt>
@@ -214,8 +215,8 @@ Turns the simpset fragment into a theorem encapsulating its rewrite behaviour, w
 </dd>
 </dl>
 <br>
+This is most useful for certain simpset fragments:
 
-<p>This is most useful for certain simpset fragments:</p>
 <dl>
 <dt><code>CONJ_ss</code></dt>
 <dd>
@@ -235,8 +236,8 @@ Rewrites to convert to disjunctive normal form.
 </dd>
 </dl>
 <br>
+Conversely, `ExclSF` is like `Excl` above, but can be used to *exclude* a set of rewrites.
 
-<p>Conversely, <code>ExclSF</code> is like <code>Excl</code> above, but can be used to <em>exclude</em> a set of rewrites.</p>
 <dl>
 <dt><code>ExclSF <i>"simpset fragment name"</i></code></dt>
 <dd>
@@ -289,10 +290,6 @@ Begins strong/complete induction using the supplied measure. This should be in t
 <dt><code>recInduct <i>theorem</i></code><br><code>ho_match_mp_tac <i>theorem</i></code></dt>
 <dd>
 Induction using the supplied theorem, which usually arises from definition of a recursive function or an inductive relation.
-</dd>
-<dt><code>name_ind_cases <i>theorem</i></code></dt>
-<dd>
-Attempts to name each case of an induction theorem, simplifying <a href="#subgoal-management">goal selection</a> (e.g. using <code>&gt;~</code>).
 </dd>
 </dl>
 <h2 id="case-splits">Case splits</h2>
@@ -392,7 +389,7 @@ Attempts to apply the given tactic - but if it fails, leaves the goal unchanged.
 <dl>
 <dt><code>strip_tac</code></dt>
 <dd>
-Moves a top-level implication antecedent into the assumptions, <em>or</em> removes a top-level <code>∀</code>-quantified variable, <em>or</em> splits a top-level conjunct into two subgoals. When stripping an implication, <code>strip_tac</code> breaks apart conjunctions, disjunctions, and existentials (e.g. stripping <code>P /\ Q</code> introduces two assumptions, <code>P</code> and <code>Q</code>).
+Splits a top-level conjunct into two subgoals, <em>or</em> move a top-level implication antecedent into the assumptions, <em>or</em> remove a top-level <code>∀</code>-quantified variable. Often <code>rpt strip_tac</code> (which repeats <code>strip_tac</code> as many times as possible) is used.
 </dd>
 <dt><code>conj_tac</code></dt>
 <dd>
@@ -463,10 +460,6 @@ Introduces the supplied term as a hypothesis that can be assumed without loss of
 <dd>
 Introduces the supplied theorem into the assumptions.
 </dd>
-<dt><code>strip_assume_tac <i>theorem</i></code></dt>
-<dd>
-A combination of <code>assume_tac</code> and <a href="#goal-deconstruction"><code>strip_tac</code></a>: introduces the supplied theorem into the assumptions after deconstructing its conjunctions, disjunctions, and existentials.
-</dd>
 <dt><code>mp_tac <i>theorem</i></code></dt>
 <dd>
 Introduces the supplied theorem into the goal as an implication (i.e. transforms the <code>goal</code> into <code><i>theorem</i> ==&gt; goal</code>).
@@ -529,15 +522,11 @@ Given a theorem of the form <code>∀vars. P1 /\ ... /\ Pn ==&gt; Q</code>, look
 </dd>
 <dt><code>drule_all <i>theorem</i></code></dt>
 <dd>
-A variant of <code>drule</code> which attempts to match all the conjuncts <code>P1, ..., Pn</code>. This has a <code>rev_drule_all</code> variant.
+A variant of <code>drule</code> which attempts to match all the conjuncts <code>P1, ..., Pn</code>.
 </dd>
 <dt><code>drule_then <i>theorem thm_tactic</i></code></dt>
 <dd>
-A variant of <code>drule</code> which processes the resulting instantiated theorem using a theorem-tactic, rather than adding it as an implication to the goal. This has a <code>rev_drule_then</code> variant.
-</dd>
-<dt><code>dxrule <i>theorem</i></code> <br> <code>dxrule_all <i>theorem</i></code> <br> <code>dxrule_then <i>theorem thm_tactic</i></code></dt>
-<dd>
-Variants of the above which remove the matching assumption(s). They also have <code>rev_*</code> variants.
+A variant of <code>drule</code> which processes the resulting instantiated theorem using a theorem-tactic, rather than adding it as an implication to the goal.
 </dd>
 <dt><code>irule <i>theorem</i></code></dt>
 <dd>
@@ -581,8 +570,8 @@ Applies <code>drule <i>theorem</i></code>, but attempts to match/instantiate the
 </dd>
 </dl>
 <br>
+The <code><i>position</i></code> is expressed as a value of type `match_position`, with values and meanings:
 
-<p>The <code><i>position</i></code> is expressed as a value of type <code>match_position</code>, with values and meanings:</p>
 <dl>
 <dt><code>Any</code></dt>
 <dd>
@@ -602,8 +591,9 @@ Match against the negated conclusion, i.e. use the implication in a contrapositi
 </dd>
 </dl>
 <br>
+By way of example, given a goal `∃x y. P x /\ Q y` and a theorem `thm = ⊢ R a b ==> P b`, `irule_at Any thm` produces the goal `∃a y. R a b /\ Q y`.
+`irule_at (Pos hd) thm` is equivalent in this case.
 
-<p>By way of example, given a goal <code>∃x y. P x /\ Q y</code> and a theorem <code>thm = ⊢ R a b ==&gt; P b</code>, <code>irule_at Any thm</code> produces the goal <code>∃a y. R a b /\ Q y</code>. <code>irule_at (Pos hd) thm</code> is equivalent in this case.</p>
 <h2 id="renaming-and-abbreviating">Renaming and abbreviating</h2>
 <p>HOL4 automatically generates fresh names where necessary, e.g. for case splits and existential witnesses. This is usually by appending apostrophes, and the resulting names become ugly. Sometimes large terms are generated too, and these are unwieldy.</p>
 <p>Small changes to proofs can change variable naming and large expression structure quite easily - explicitly relying on automatically-chosen variable names or the exact phrasing of large expressions can lead to brittle proofs. Both are therefore bad style. Instead, we can rename variables appropriately, and abbreviate large terms.</p>
